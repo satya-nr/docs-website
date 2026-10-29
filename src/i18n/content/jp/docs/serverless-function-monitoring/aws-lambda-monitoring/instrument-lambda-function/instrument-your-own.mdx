@@ -44,6 +44,23 @@ New Relic包括的な監視のためにAWS Lambda 関数をプランニングす
 
     このコマンドは、Lambdaのリージョンとランタイムに合わせて、利用可能な最新のレイヤーを自動的に見つけます。
 
+    ### 使用するキーの選択
+
+    New Relic Lambda拡張機能は、取り込み（ライセンス）キーのみを使用してテレメトリーを送信します—ユーザーAPIキーを使用することは決してありません。`layers install`を実行する際、これを`--nr-api-key`または`--nr-ingest-key`のいずれかで設定します。これらは異なる目的を果たしており、状況に合わない間違ったものを選択すると、予期しないキーが関数に割り当てられる可能性があります：
+
+    * **`--nr-api-key`**（[ユーザーAPIキー](/docs/apis/intro-apis/new-relic-api-keys/#user-key)）：CLIは、New Relicでの認証と、ユーザーに代わってIngestキーを検索するためにのみ、このキーを使用します。アカウントに対して利用可能なIngestキーのクエリを実行し、返された1番目のキーを使用して`NEW_RELIC_LICENSE_KEY`環境変数を設定します。これは開始するための最も速い方法ですが、CLIが選択するキーが、ユーザー自身が選択するキーと同じであるとは限りません — 異なる目的のために複数のIngestキーを持つアカウントでは、別の目的のために予約するつもりだったキーをCLIが割り当てる可能性があります。
+    * **`--nr-ingest-key`**（ご自身の[取り込み/ライセンスキー](/docs/apis/intro-apis/new-relic-api-keys/#license-key)）：このキーを直接指定すると、CLIの自動検索を完全にスキップし、`NEW_RELIC_LICENSE_KEY`を指定した正確な値に設定します。各関数がどの取り込みキーを使用するかについて、組織が明示的な制御を必要とする場合は、これを使用してください—たとえば、キーのローテーションポリシーをサポートするため、ガバナンスのために環境を別々のキーに保持するため、またはキーごとに請求を正確に属性付けるためです。
+
+    <Callout variant="important">
+      `--nr-api-key` および`--nr-ingest-key`は相互に排他的です。両方を指定するとエラーが返されます： `Please provide either the --nr-api-key or the --nr-ingest-key flag, but not both.`
+    </Callout>
+
+    自動選択に依存せず、明示的なIngestキーを使用してインストールするには：
+
+    ```shell
+    newrelic-lambda layers install --nr-account-id YOUR_NR_ACCOUNT_ID --nr-ingest-key YOUR_INGEST_KEY --function my-function --upgrade --apm
+    ```
+
     このコマンドは、 New Relicインストゥルメントを迅速に開始する方法を提供し、 CI/CDパイプラインに簡単に統合できます。 ただし、既存の Lambda 関数リソースが変更されるため、更新されたコードを再デプロイすると、インストゥルメンテーションが誤って削除される可能性があります。 継続的な監視を確実に行うには、各インストーラの後にコマンドを再実行するか、可能であれば、 New Relicレイヤーと設定をインストーラ プロセスに直接組み込みます。
 
     CLIはバッチで多くの関数を操作できることに注意してください。 `--function all` 、 `--function installed` 、または`--function not-installed`を使用して、リージョン内のすべての関数を操作するか、既存のNewRelicインストルメンテーションの有無にかかわらず関数のみを操作します。
@@ -228,6 +245,21 @@ New Relic包括的な監視のためにAWS Lambda 関数をプランニングす
               apm: true
           ```
 
+          プラグインは、アカウントのライセンスキーを自動的に検索し、`NEW_RELIC_LICENSE_KEY`を設定するためにのみ、`apiKey`（[ユーザーAPIキー](/docs/apis/intro-apis/new-relic-api-keys/#user-key)）を使用します。どのIngestキーを使用するかを明示的に制御する必要がある場合 — キーのローテーション、環境のガバナンス、または請求の割り当てなど — 代わりに`ingestKey`（[Ingest/ライセンスキー](/docs/apis/intro-apis/new-relic-api-keys/#license-key)）を設定してください：
+
+          ```yaml
+          custom:
+            newRelic:
+              accountId: your-new-relic-account-id-here
+              ingestKey: your-new-relic-ingest-key-here
+              linkedAccount: your-new-relic-integration-account-name-here
+              apm: true
+          ```
+
+          <Callout variant="tip">
+            `apiKey`と`ingestKey`の両方を設定した場合、`ingestKey`が優先され、自動検索はスキップされます。
+          </Callout>
+
        3. プロバイダー セクションに次の`NR.Apm.Lambda.Mode: true`タグを追加します。
 
           ```yaml
@@ -382,7 +414,7 @@ New Relic包括的な監視のためにAWS Lambda 関数をプランニングす
 
 AWS Lambda 関数をセットアップしたら、 New Relic APMインターフェースでデータを検索して使用できるようになります。 データはいくつかの主要な領域に編成されており、それぞれがLambda関数のパフォーマンスと状態に異なるインサイトを提供します。
 
-APMインターフェイスでは、[ディストリビューティッド（分散）ト](/docs/distributed-tracing/concepts/introduction-distributed-tracing/)レーシング、[サービス マップ](/docs/new-relic-solutions/new-relic-one/ui-data/service-maps/service-maps/)、[トランザクション](/docs/apm/transactions/intro-transactions/transactions-new-relic-apm/)、[エラー分析](/docs/errors-inbox/getting-started/)などを含む、 Lambda関数のさまざまな側面を探索できます。 これらの各エリアでは、 Lambda関数のパフォーマンス、レイテンシ、エラー率に関する詳細なインサイトが提供され、問題を迅速に特定して解決できるようになります。
+APMインターフェースでは、[ディストリビューティッド（分散）トレーシング](/docs/distributed-tracing/concepts/introduction-distributed-tracing/)、[サービスマップ](/docs/new-relic-solutions/new-relic-one/ui-data/service-maps/service-maps/)、[トランザクション](/docs/apm/transactions/intro-transactions/transactions-new-relic-apm/)、[エラー分析](/docs/triage-inbox/getting-started/)など、Lambda関数のさまざまな側面を調査できます。これらの各領域では、Lambda関数のパフォーマンス、レイテンシ、エラー率に関する詳細なインサイトが提供されるため、問題を迅速に特定して解決できます。
 
 <Callout variant="tip">
   呼び出しエクスペリエンスは、 APM対話トレースと統合されました。 これにより、特定の`AWS RequestId`を使用してAPMマッカーサー トレースにドリルダウンし、特定のLambda実行に関する詳細情報を得ることができます。

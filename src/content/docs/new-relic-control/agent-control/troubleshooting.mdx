@@ -1,12 +1,16 @@
 ---
 title: "Troubleshoot common issues"
 metaDescription: "Learn how to diagnose and resolve common problems with Agent Control."
+tags:
+  - agent-control
+  - troubleshoot
+  - errors
+  - nrdiag
+  - kubernetes
+  - linux
+  - windows
 freshnessValidatedDate: never
 ---
-
-<Callout variant="important">
-  Agent Control and New Relic Control are now **generally available** for Kubernetes! Support for Linux hosts and Windows hosts is also in **public preview** program, pursuant to our [pre-release policies](/docs/licenses/license-information/referenced-policies/new-relic-pre-release-policy).
-</Callout>
 
 This document covers the steps to troubleshoot common issues when installing or operating Agent Control. It is organized by environment.
 
@@ -308,24 +312,7 @@ log:
   </Collapser>
 
   <Collapser id="health_check" title="Local health status endpoint">
-    To access the health status details, you'll first need to enable the local server by following these steps:
-
-    1. Add the following settings in Agent Control [configuration file](/docs/new-relic-agent-control#configure-agent-control):
-
-    ```yaml
-      server:
-        enabled: true
-        # default values (change if needed)
-        #host: "127.0.0.1"
-        #port: 51200
-    ```
-    2. Restart Agent Control:
-
-    ```bash
-      sudo systemctl restart newrelic-agent-control
-    ```
-
-    3. Query the status endpoint using the following command:
+    The local status server is enabled by default. Query the status endpoint using the following command:
 
     ```shell
       curl 127.0.0.1:51200/status
@@ -456,13 +443,22 @@ Get-ChildItem "C:\ProgramData\New Relic\newrelic-agent-control\log\agent-control
 ```
 
 <Callout variant="tip">
-  **File logging configuration:** Agent Control requires explicit configuration to enable file logging. If no log files exist, add this to your `local_config.yaml`:
+  **File logging configuration:** File logging is enabled by default. If no log files exist, check that it hasn't been disabled in your `local_config.yaml`:
   ```yaml
   log:
     file:
       enabled: true
   ```
   Then restart the service for logs to appear.
+  **Find Agent Control logs at:**
+    `C:\ProgramData\New Relic\newrelic-agent-control\logs\`
+
+    Log files include date suffixes (e.g., `newrelic-agent-control.log.2026-02-09-11`).
+
+    View recent logs from the latest file:
+    ```powershell
+    Get-ChildItem "C:\ProgramData\New Relic\newrelic-agent-control\logs\" -Filter "newrelic-agent-control.log.*" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content -Tail 100
+    ```
 </Callout>
 
 **3. Test manual execution:**

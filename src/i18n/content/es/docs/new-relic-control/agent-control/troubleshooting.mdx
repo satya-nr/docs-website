@@ -1,13 +1,17 @@
 ---
 title: Solucionar problemas comunes
 metaDescription: Learn how to diagnose and resolve common problems with Agent Control.
+tags:
+  - agent-control
+  - troubleshoot
+  - errors
+  - nrdiag
+  - kubernetes
+  - linux
+  - windows
 freshnessValidatedDate: never
 translationType: machine
 ---
-
-<Callout variant="important">
-  ¡Agent Control y New Relic Control ahora están **disponibles a nivel general** para Kubernetes! El soporte para hosts Linux y hosts Windows también se encuentra en el programa de **vista previa pública**, de conformidad con nuestras [políticas de versión preliminar](/docs/licenses/license-information/referenced-policies/new-relic-pre-release-policy).
-</Callout>
 
 Este documento cubre los pasos para solucionar problemas comunes al instalar u operar Agent Control. Está organizado por ambiente.
 
@@ -313,25 +317,7 @@ Este documento cubre los pasos para solucionar problemas comunes al instalar u o
   </Collapser>
 
   <Collapser id="health_check" title="Punto de conexión de estado de salud local">
-    Para acceder a los detalles del estado de salud, primero deberá habilitar el servidor local siguiendo estos pasos:
-
-    1. Agregue las siguientes configuraciones en el [archivo de configuración](/docs/new-relic-agent-control#configure-agent-control) de Agent Control:
-
-    ```yaml
-      server:
-        enabled: true
-        # default values (change if needed)
-        #host: "127.0.0.1"
-        #port: 51200
-    ```
-
-    2. Reiniciar Agent Control:
-
-    ```bash
-      sudo systemctl restart newrelic-agent-control
-    ```
-
-    3. Consulte el endpoint de estado utilizando el siguiente comando:
+    El servidor de estado local está habilitado de forma predeterminada. Consulte el extremo de estado utilizando el siguiente comando:
 
     ```shell
       curl 127.0.0.1:51200/status
@@ -478,7 +464,7 @@ Get-ChildItem "C:\ProgramData\New Relic\newrelic-agent-control\log\agent-control
 ```
 
 <Callout variant="tip">
-  **Configuración de logging de archivo:** Agent Control requiere una configuración explícita para habilitar el log de archivo. Si no existen archivos de log, agregue esto a su `local_config.yaml`:
+  **Configuración de logging en archivos:** el logging en archivos está habilitado por defecto. Si no existen archivos de log, verifique que no se haya deshabilitado en su `local_config.yaml`:
 
   ```yaml
   log:
@@ -486,7 +472,15 @@ Get-ChildItem "C:\ProgramData\New Relic\newrelic-agent-control\log\agent-control
       enabled: true
   ```
 
-  Luego, reinicie el servicio para que aparezcan los logs.
+  Luego, reinicie el servicio para que aparezcan los logs. **Encuentre los logs de control del agente en:** `C:\ProgramData\New Relic\newrelic-agent-control\logs\`
+
+  Los archivos de log incluyen sufijos de fecha (por ejemplo, `newrelic-agent-control.log.2026-02-09-11`).
+
+  Ver logs recientes del último archivo:
+
+  ```powershell
+  Get-ChildItem "C:\ProgramData\New Relic\newrelic-agent-control\logs\" -Filter "newrelic-agent-control.log.*" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content -Tail 100
+  ```
 </Callout>
 
 **3. Pruebe la ejecución manual:**

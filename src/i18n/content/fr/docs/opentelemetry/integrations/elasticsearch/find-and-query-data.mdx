@@ -35,6 +35,29 @@ Ou
   **Vous ne voyez pas de données ?** Les données peuvent mettre quelques minutes à apparaître. Si vous ne voyez pas de métriques après 10 minutes, consultez les logs du collecteur et vérifiez votre configuration.
 </Callout>
 
+## Afficher les traces distribuées et la corrélation APM [#traces-correlation]
+
+Si vous avez activé [la corrélation APM avec le tracing distribué](/docs/opentelemetry/integrations/elasticsearch/distributed-tracing), vous pouvez effectuer des requêtes sur les spans Elasticsearch et voir comment vos applications se connectent au cluster.
+
+Confirmez qu’Elasticsearch émet des spans taguées avec le nom du cluster :
+
+```sql
+FROM Span SELECT count(*)
+WHERE es.cluster.name = '<elasticsearch-cluster-name>'
+FACET name
+SINCE 30 minutes ago
+```
+
+Découvrez quelles applications appellent Elasticsearch :
+
+```sql
+FROM Span SELECT uniques(service.name)
+WHERE db.system = 'elasticsearch'
+SINCE 30 minutes ago
+```
+
+Vous pouvez également ouvrir l’entité du cluster Elasticsearch et afficher sa **carte des services**: les applications instrumentées apparaissent connectées au cluster via une relation `CALLS`, et toutes les traces distribuées qui touchent Elasticsearch affichent les spans Elasticsearch en ligne à côté des spans de votre application.
+
 ## Configurer des alertes [#alerts]
 
 Le monitoring proactif avec des alertes vous aide à détecter les problèmes avant qu&apos;ils n&apos;affectent vos utilisateurs. Pour créer des conditions d&apos;alerte dans New Relic :

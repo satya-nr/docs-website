@@ -37,11 +37,7 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
         <thead>
           <tr>
             <th>
-              Champ de saisie
-            </th>
-
-            <th>
-              optionnalité
+              Saisir
             </th>
 
             <th>
@@ -61,15 +57,13 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Requis
-            </td>
-
-            <td>
               Chaîne
             </td>
 
             <td>
-              Doit être transmis en tant que secret. Un ID client de principal de service Azure. Voir comment 
+              **Obligatoire.**
+
+               Doit être transmis en tant que secret. Un ID client de principal de service Azure. Voir comment 
 
               [inscrire une application Azure.](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/register-app-for-token?tabs=portal)
             </td>
@@ -81,15 +75,13 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Requis
-            </td>
-
-            <td>
               Chaîne
             </td>
 
             <td>
-              Doit être passé en tant que secret. Un clientSecret de principal de service Azure. Voir comment 
+              **Obligatoire.**
+
+               Doit être transmis en tant que secret. Un clientSecret de principal de service Azure. Voir comment 
 
               [inscrire une application Azure.](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/register-app-for-token?tabs=portal)
             </td>
@@ -101,15 +93,13 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Requis
-            </td>
-
-            <td>
               Chaîne
             </td>
 
             <td>
-              L&apos;identificateur de locataire Azure peut être transmis en tant que secret.
+              **Obligatoire.**
+
+               L’identifiant de locataire Azure peut être transmis en tant que secret.
             </td>
           </tr>
 
@@ -119,17 +109,15 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Requis
-            </td>
-
-            <td>
               Chaîne
             </td>
 
             <td>
-              Le chemin de l&apos;URL pour la 
+              **Obligatoire.**
 
-              [requête d&apos;API Azure](https://learn.microsoft.com/en-us/rest/api/azure/)
+               Le chemin de l’URL pour la 
+
+              [requête d’API Azure](https://learn.microsoft.com/en-us/rest/api/azure/)
 
               .
             </td>
@@ -141,15 +129,13 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Requis
-            </td>
-
-            <td>
               Chaîne
             </td>
 
             <td>
-              Un de [
+              **Obligatoire.**
+
+               Un de [
 
               `"GET", "POST", "PUT", "DELETE", "PATCH"`
 
@@ -163,15 +149,13 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Facultatif
-            </td>
-
-            <td>
               Carte
             </td>
 
             <td>
-              Un corps facultatif sous forme de map JSON à transmettre si nécessaire, généralement utilisé avec les méthodes 
+              **Facultatif.**
+
+               Un corps facultatif sous forme de map JSON à transmettre si nécessaire, généralement utilisé avec les méthodes 
 
               `PUT`
 
@@ -179,7 +163,7 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
 
               `PATCH`
 
-               et 
+              , et 
 
               `POST`
 
@@ -195,7 +179,7 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
         <thead>
           <tr>
             <th>
-              Champ de sortie
+              Sortir
             </th>
 
             <th>
@@ -305,7 +289,9 @@ Cette action vous permet d&apos;exécuter toute opération documentée dans la [
             </td>
 
             <td>
-              Facultatif. Utilisé pour le contrôle de concurrence lors de la mise à jour d&apos;une ressource afin d&apos;éviter d&apos;écraser les modifications d&apos;un autre utilisateur.
+              **Facultatif.**
+
+               Utilisé pour le contrôle de simultanéité lors de la mise à jour d’une ressource afin d’éviter d’écraser les modifications d’un autre utilisateur.
             </td>
           </tr>
         </tbody>

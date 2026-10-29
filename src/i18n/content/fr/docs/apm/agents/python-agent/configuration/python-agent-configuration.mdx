@@ -2099,9 +2099,7 @@ Pour plus d&apos;informations sur la trace de transaction, voir [trace de transa
 
     Par exemple, si vous souhaitez ajouter le tracing de fonction à toutes les fonctions de validation dans le fichier ci-dessous :
 
-    <b>
-      my-app/common/utils.py
-    </b>
+    <b>my-app/common/utils.py</b>
 
     ```py
     def validate_credentials():
@@ -2114,9 +2112,7 @@ Pour plus d&apos;informations sur la trace de transaction, voir [trace de transa
 
     Ajoutez la ligne suivante au fichier de configuration de l&apos;agent pour inclure le tracing des fonctions dans toutes les fonctions de validation dans `my-app/common/utils.py` en utilisant des caractères génériques.
 
-    <b>
-      my-app/newrelic.ini
-    </b>
+    <b>my-app/newrelic.ini</b>
 
     ```ini
     [newrelic]
@@ -3060,6 +3056,44 @@ Voici les monitoring paramètres des navigateurs disponibles via le agent config
 
     Toutes les clés d&apos;attribut trouvées dans cette liste ne seront pas envoyées dans les pages vues. Pour plus d&apos;informations, consultez les [règles d&apos;attribut de l&apos;agent](/docs/apm/other-features/attributes/agent-attributes).
   </Collapser>
+
+  <Collapser id="cfg-bm-version" title="browser_monitoring.version">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            Type
+          </th>
+
+          <td>
+            Chaîne
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            Défaut
+          </th>
+
+          <td>
+            &quot;latest&quot;
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            [S&apos;installer](#options)
+          </th>
+
+          <td>
+            Fichier de configuration
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    À partir de l&apos;agent Python v13.6.0, les clients peuvent désormais définir la version de l&apos;agent du browser. S&apos;il est laissé vide, il utilisera par défaut la dernière version de l&apos;agent du browser.
+  </Collapser>
 </CollapserGroup>
 
 ## Paramètres des événements de transaction
@@ -3686,7 +3720,7 @@ Les paramètres incluent :
     * `always_off`: N&apos;échantillonne jamais les traces qui ont un parent distant non échantillonné.
   </Collapser>
 
-  <Collapser id="distributed-tracing-sampler-remote-parent-not-sampled-trace-id-ratio-based-ratio" title="distributed_tracing.sampler.remote-parent-not-sampled.trace_id_ratio_based.ratio">
+  <Collapser id="distributed-tracing-sampler-remote-parent-not-sampled-trace-id-ratio-based-ratio" title="distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio">
     <table>
       <tbody>
         <tr>
@@ -6226,6 +6260,34 @@ Voici divers autres paramètres disponibles via le fichier de configuration de l
     </table>
 
     Si `true`, l’agent détecte automatiquement qu’il s’exécute dans un environnement Azure.
+  </Collapser>
+
+  <Collapser id="utilization-detect_azureappservice" title="utilization.detect_azureappservice">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            Type
+          </th>
+
+          <td>
+            Booléen
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            Défaut
+          </th>
+
+          <td>
+            `true`
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    Si `true`, l&apos;agent détecte automatiquement qu&apos;il s&apos;exécute dans un environnement Azure App Services.
   </Collapser>
 
   <Collapser id="utilization-detect_gcp" title="utilization.detect_gcp">

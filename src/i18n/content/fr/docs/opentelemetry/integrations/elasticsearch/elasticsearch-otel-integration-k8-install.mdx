@@ -410,12 +410,16 @@ Choisissez la distribution du collecteur qui correspond à vos besoins :
                 **Modifications requises :**
 
                 * **Règle de label de pod** - La règle `labels["app"] == "elasticsearch"` doit correspondre à vos labels de pod
-                * **Nom du cluster** - Remplacez `elasticsearch-cluster` dans `resource/cluster` et `resource/cluster_name_override` par le nom unique de votre cluster
+                * **Nom du cluster** - Dans `resource/cluster_name_override`, remplacez `elasticsearch-cluster` par votre `cluster.name` Elasticsearch ; il doit correspondre au nom indiqué par Elasticsearch (voir la remarque ci-dessous). Dans `resource/cluster`, remplacez `elasticsearch-cluster` par un nom qui identifie votre cluster Kubernetes (`k8s.cluster.name`).
 
                 **Modifications facultatives :**
 
                 * **Port** - Mettez à jour `9200` si Elasticsearch s&apos;exécute sur un port différent
                 * **Authentification** - Ajoutez des identifiants si votre cluster Elasticsearch est sécurisé (voir l’exemple ci-dessous)
+              </Callout>
+
+              <Callout variant="important">
+                Assurez-vous que le `elasticsearch.cluster.name` défini dans `resource/cluster_name_override` correspond au `cluster.name` configuré dans Elasticsearch, et qu’il est unique au sein de votre compte New Relic.
               </Callout>
 
               **Pour les clusters Elasticsearch sécurisés :**
@@ -1710,7 +1714,7 @@ Choisissez la distribution du collecteur qui correspond à vos besoins :
 
           Remplacez les valeurs suivantes dans la configuration :
 
-          * `<elasticsearch-cluster-name>`: le nom de votre cluster Elasticsearch
+          * `<elasticsearch-cluster-name>`: le nom de votre cluster Elasticsearch, utilisé pour identifier le cluster dans New Relic. Définissez ceci sur le `cluster.name` configuré dans Elasticsearch, et assurez-vous qu’il est unique dans votre compte New Relic.
           * `elasticsearch-exporter-prometheus-elasticsearch-exporter.monitoring.svc.cluster.local:9114`: l&apos;adresse du service Kubernetes de votre exportateur
         </Step>
 
@@ -1804,9 +1808,16 @@ Choisissez la distribution du collecteur qui correspond à vos besoins :
   </TabsPages>
 </Tabs>
 
-<Callout variant="tip">
-  **Corréler APM avec Elasticsearch**: pour connecter votre application APM et votre cluster Elasticsearch, incluez l&apos;attribut de ressource `es.cluster.name="your-cluster-name"` dans vos métriques APM. Cela permet une visibilité inter-services et un dépannage plus rapide au sein de New Relic.
-</Callout>
+## Corréler APM avec Elasticsearch [#correlate-apm]
+
+Reliez vos applications au cluster Elasticsearch qu&apos;elles appellent, afin qu&apos;une transaction lente mène directement au cluster qui l&apos;a servie. Choisissez la profondeur de connexion que vous souhaitez :
+
+| Approche                       | Ce que vous obtenez                                                                                         | Ce que vous configurez                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Tracing distribué (recommandé) | Traces de bout en bout de l’application vers Elasticsearch et une relation automatique de service à cluster | Activez le tracing intégré d’Elasticsearch, sans modification par application  |
+| Métriques uniquement           | Le cluster s’affiche comme une entité associée                                                              | Ajoutez `es.cluster.name` à la télémétrie de votre application (toute version) |
+
+Pour la configuration étape par étape du tracing, y compris la configuration du collecteur spécifique à Kubernetes, consultez [Corréler l’APM avec Elasticsearch à l’aide du tracing distribué](/docs/opentelemetry/integrations/elasticsearch/distributed-tracing).
 
 ## Dépannage [#troubleshooting]
 

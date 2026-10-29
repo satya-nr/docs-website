@@ -2099,9 +2099,7 @@ Para obter mais informações sobre rastreamento da transação, consulte [rastr
 
     Por exemplo, se você deseja adicionar rastreamento de função a todas as funções de validação no arquivo abaixo:
 
-    <b>
-      my-app/common/utils.py
-    </b>
+    <b>my-app/common/utils.py</b>
 
     ```py
     def validate_credentials():
@@ -2114,9 +2112,7 @@ Para obter mais informações sobre rastreamento da transação, consulte [rastr
 
     Adicione a seguinte linha ao arquivo de configuração do agente para incluir o rastreamento de função para todas as funções de validação em `my-app/common/utils.py` usando caracteres curinga.
 
-    <b>
-      my-app/newrelic.ini
-    </b>
+    <b>my-app/newrelic.ini</b>
 
     ```ini
     [newrelic]
@@ -3060,6 +3056,44 @@ Aqui estão as configurações de monitoramento do browser disponíveis através
 
     Todas as chaves de atributo encontradas nesta lista não serão enviadas em page views. Para mais informações, consulte as [regras de atribuição de agentes](/docs/apm/other-features/attributes/agent-attributes).
   </Collapser>
+
+  <Collapser id="cfg-bm-version" title="browser_monitoring.version">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            Tipo
+          </th>
+
+          <td>
+            Corda
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            Padrão
+          </th>
+
+          <td>
+            &quot;latest&quot;
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            [Definir](#options)
+          </th>
+
+          <td>
+            Arquivo de configuração
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    A partir do Agente Python v13.6.0, os clientes agora podem definir a versão do agente do browser. Se deixado em branco, o padrão será a versão mais recente do agente do browser.
+  </Collapser>
 </CollapserGroup>
 
 ## Configurações de eventos de transação
@@ -3686,7 +3720,7 @@ As configurações incluem:
     * `always_off`: Nunca faça amostras de rastreamento que tenham um pai remoto não amostrado.
   </Collapser>
 
-  <Collapser id="distributed-tracing-sampler-remote-parent-not-sampled-trace-id-ratio-based-ratio" title="distributed_tracing.sampler.remote-parent-not-sampled.trace_id_ratio_based.ratio">
+  <Collapser id="distributed-tracing-sampler-remote-parent-not-sampled-trace-id-ratio-based-ratio" title="distributed_tracing.sampler.remote_parent_not_sampled.trace_id_ratio_based.ratio">
     <table>
       <tbody>
         <tr>
@@ -6226,6 +6260,34 @@ Aqui estão diversas outras configurações disponíveis por meio do arquivo de 
     </table>
 
     Se `true`, o agente detecta automaticamente que está em execução em um ambiente do Azure.
+  </Collapser>
+
+  <Collapser id="utilization-detect_azureappservice" title="utilization.detect_azureappservice">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            Tipo
+          </th>
+
+          <td>
+            Boleano
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            Padrão
+          </th>
+
+          <td>
+            `true`
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    Se `true`, o agente detecta automaticamente que está em execução em um ambiente do Azure App Services.
   </Collapser>
 
   <Collapser id="utilization-detect_gcp" title="utilization.detect_gcp">

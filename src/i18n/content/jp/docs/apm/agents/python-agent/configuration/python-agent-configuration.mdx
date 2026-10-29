@@ -2099,9 +2099,7 @@ Pythonエージェントは、次の優先順位で設定を適用します。
 
     例えば、以下のファイル内のすべての検証関数に関数トレースを追加したい場合：
 
-    <b>
-      my-app/common/utils.py
-    </b>
+    <b>my-app/common/utils.py</b>
 
     ```py
     def validate_credentials():
@@ -2114,9 +2112,7 @@ Pythonエージェントは、次の優先順位で設定を適用します。
 
     エージェント設定ファイルに次の行を追加し、ワイルドカードを使用して`my-app/common/utils.py`内のすべての検証関数に関数トレースを追加します。
 
-    <b>
-      my-app/newrelic.ini
-    </b>
+    <b>my-app/newrelic.ini</b>
 
     ```ini
     [newrelic]
@@ -3059,6 +3055,44 @@ Pythonエージェントは、次の優先順位で設定を適用します。
     </table>
 
     このリストに含まれる属性キーはすべて、ページビューには送信されません。詳しくは[エージェント属性ルール](/docs/apm/other-features/attributes/agent-attributes)を参照してください。
+  </Collapser>
+
+  <Collapser id="cfg-bm-version" title="browser_monitoring.version">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            タイプ
+          </th>
+
+          <td>
+            文字列
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            デフォルト
+          </th>
+
+          <td>
+            &quot;latest&quot;
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            [ ](#options)
+          </th>
+
+          <td>
+            設定ファイル
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    Pythonエージェント v13.6.0以降では、ユーザーがBrowserエージェントのバージョンを指定できるようになりました。空白のままにした場合、デフォルトでBrowserエージェントの最新バージョンが使用されます。
   </Collapser>
 </CollapserGroup>
 
@@ -6226,6 +6260,34 @@ New Relicは、監視対象のトレーサーを含めるか、除外するか�
     </table>
 
     `true`の場合、エージェントはAzure環境で実行されていることを自動検出します。
+  </Collapser>
+
+  <Collapser id="utilization-detect_azureappservice" title="utilization.detect_azureappservice">
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            タイプ
+          </th>
+
+          <td>
+            ブール値
+          </td>
+        </tr>
+
+        <tr>
+          <th>
+            デフォルト
+          </th>
+
+          <td>
+            `true`
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    `true`の場合、エージェントはAzure App Services環境で実行されていることを自動検出します。
   </Collapser>
 
   <Collapser id="utilization-detect_gcp" title="utilization.detect_gcp">

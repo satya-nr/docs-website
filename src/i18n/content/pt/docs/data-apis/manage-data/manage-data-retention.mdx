@@ -624,6 +624,24 @@ Esta tabela mostra as configurações padrão de retenção [de namespace](/docs
         8
       </td>
     </tr>
+
+    <tr>
+      <td>
+        Monitoramento de banco de dados
+      </td>
+
+      <td>
+        DBMonitoring
+      </td>
+
+      <td>
+        30
+      </td>
+
+      <td>
+        120
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -823,6 +841,10 @@ Nesta seção há detalhes sobre alguns tipos diferentes de dados, incluindo alg
         </tr>
       </tbody>
     </table>
+  </Collapser>
+
+  <Collapser id="db-monitoring-namespace" title="Namespace de monitoramento de banco de dados">
+    O namespace `DBMonitoring` armazena dados coletados pelos recursos de monitoramento de banco de dados do New Relic, incluindo amostras de consulta, consulta principal, principais procedimentos, planos de execução e dados de evento de espera. Os dados de monitoramento do banco de dados não sofrem redução de amostragem, os dados brutos são retidos durante todo o período de retenção.
   </Collapser>
 </CollapserGroup>
 

@@ -725,10 +725,14 @@ Synthetics ジョブ マネージャーのイメージは、 [Docker Hub](https:
     Linux でポッドを作成し、ホスト マシンの IP アドレスを追加するには:
 
     ```
-    podman pod create --network slirp4netns --name YOUR_POD_NAME --add-host=podman.service:HOST_IP_ADDRESS
+    podman pod create --network slirp4netns --name YOUR_POD_NAME --add-host=podman.service:HOST_IP_ADDRESS --shm-size=2g
     ```
 
-    ジョブ マネージャーを起動するには:
+    <Callout variant="important">
+      ポッドの作成時に`--shm-size`を設定します。ポッド内のすべてのコンテナは、ポッド自体によってサイズが決定される単一の`/dev/shm`割り当て（デフォルトでは64 MiB）を共有しており、個々のコンテナが後でサイズを変更したり上書きしたりすることはできません。Browserモニターはこれに特に敏感です — `/dev/shm`が小さすぎると、Chromeは`NoSuchSessionError: invalid session id`のようなエラーでクラッシュする可能性があります。詳細については、「[Podmanでの共有メモリのサイズ設定によるBrowserモニターのクラッシュ](/docs/synthetics/synthetic-monitoring/private-locations/troubleshoot-private-locations/#shm)」を参照してください。
+    </Callout>
+
+    ジョブマネージャーを開始するには：
 
     ```
     podman run \
@@ -820,16 +824,16 @@ Synthetics ジョブ マネージャーのイメージは、 [Docker Hub](https:
        kind: BuildConfig
        metadata:
          name: synthetics-node-api-runtime-build
-         namespace: <your_namespace> 
+         namespace: <your_namespace>
        spec:
          output:
            to:
              kind: ImageStreamTag
-             name: <your_output_image_name>:<output_tag> 
+             name: <your_output_image_name>:<output_tag>
          source:
            type: Dockerfile
            dockerfile: |-
-             FROM newrelic/synthetics-node-api-runtime:latest 
+             FROM newrelic/synthetics-node-api-runtime:latest
              USER root
              RUN setcap -r /usr/bin/node
              USER 2000
@@ -837,7 +841,7 @@ Synthetics ジョブ マネージャーのイメージは、 [Docker Hub](https:
            type: Docker
            dockerStrategy:
              platform:
-               architecture: amd64 
+               architecture: amd64
          postCommit: {}
          triggers:
            - type: ConfigChange
@@ -1025,6 +1029,64 @@ Dockerまたは Podman コンテナ システム環境では、それぞれの `
 
     リリースには重要な依存関係があります。 サンドボックスを有効にするには、次の点を確認してください。
 
+    以下のルートレス・セットアップは、1回限りの管理者/rootの手順と、サービス・アカウント（Podmanを実行するルートレス・ユーザー）が自身で実行する手順で構成されています。作業の分担は次のとおりです：
+
+    <table>
+      <thead>
+        <tr>
+          <th>
+            管理者/rootful（sudo）
+          </th>
+
+          <th>
+            サービスアカウント（ルートレスユーザー）
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            Podmanのインストール
+          </td>
+
+          <td>
+            `~/.config/containers/containers.conf`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            GRUB経由でcgroups v2を有効にする（RHELのみ）
+          </td>
+
+          <td>
+            `~/.config/systemd/user/podman.service.d/override.conf`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            `/etc/systemd/system/user@.service.d/delegate.conf`
+          </td>
+
+          <td>
+            `systemctl --user enable/start podman.socket`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            `loginctl enable-linger YOUR_SERVICE_ACCOUNT_USERNAME`
+          </td>
+
+          <td>
+            `~/.config/systemd/user/podman-api.service` + `systemctl --user enable/start`
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     1. Podman [5.0.0-ce](https://github.com/containers/podman/releases/tag/v5.0.0)以降をインストールしました。
 
     2. ルートレス実行を有効にしました:
@@ -1056,7 +1118,25 @@ Dockerまたは Podman コンテナ システム環境では、それぞれの `
        echo -e "[Service]\nDelegate=yes" | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null
        ```
 
-    5. ユーザーレベルの`systemd`サービスを設定します。
+    5. サービスアカウントのlingeringを有効にして、アクティブなログインセッションがなくても、そのユーザーレベルの`systemd`サービス（次の手順で設定）が実行され続けるようにしました：
+
+       ```
+       sudo loginctl enable-linger YOUR_SERVICE_ACCOUNT_USERNAME
+       ```
+
+       有効になったことを確認してください：
+
+       ```
+       loginctl show-user YOUR_SERVICE_ACCOUNT_USERNAME --property=Linger
+       ```
+
+       これは`Linger=yes`を返す必要があります。
+
+       <Callout variant="tip">
+         サービスアカウントを一元的にプロビジョニングしており、そのアカウントに代わってこれを実行するための`sudo`アクセス権がない場合、そのアカウント自身としてログインしている間に引数なしで`loginctl enable-linger`を実行することで、アカウント自身のlingeringを有効にすることができます。
+       </Callout>
+
+    6. ユーザーレベルの`systemd`サービスを設定します。
 
        * ユーザー レベルの`systemd`サービス用のディレクトリを作成します。
          ```
@@ -1067,14 +1147,14 @@ Dockerまたは Podman コンテナ システム環境では、それぞれの `
          echo -e "[Service]\nDelegate=yes" > ~/.config/systemd/user/podman.service.d/override.conf
          ```
 
-    6. Podman ソケットを有効にして起動しました。
+    7. Podman ソケットを有効にして起動しました。
        ```
        systemctl --user enable podman.socket
        systemctl --user start podman.socket
        systemctl --user status podman.socket
        ```
 
-    7. Podman API サービスを作成して構成しました。
+    8. Podman API サービスを作成して構成しました。
 
        * Podman API サービスを作成し、HTTP API アクセスを提供するように Podman を設定します。
          ```
@@ -1097,7 +1177,7 @@ Dockerまたは Podman コンテナ システム環境では、それぞれの `
          WantedBy=default.target
          ```
 
-    8. Podman API サービスを有効にして開始しました。
+    9. Podman API サービスを有効にして開始しました。
        ```
        systemctl --user daemon-reload
        systemctl --user enable podman-api.service

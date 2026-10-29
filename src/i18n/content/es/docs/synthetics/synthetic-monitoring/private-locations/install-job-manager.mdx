@@ -725,10 +725,14 @@ A continuación se muestran las instrucciones aplicables de Docker, Podman o Kub
     Para crear un pod en Linux y agregar la dirección IP de la máquina host:
 
     ```
-    podman pod create --network slirp4netns --name YOUR_POD_NAME --add-host=podman.service:HOST_IP_ADDRESS
+    podman pod create --network slirp4netns --name YOUR_POD_NAME --add-host=podman.service:HOST_IP_ADDRESS --shm-size=2g
     ```
 
-    Para iniciar el Administrador de trabajos:
+    <Callout variant="important">
+      Configure `--shm-size` en el momento de la creación del pod. Todos los contenedores del pod comparten una única asignación de `/dev/shm` cuyo tamaño determina el propio pod (64 MiB por defecto), y un contenedor individual no puede redimensionarla ni sobrescribirla más adelante. Los monitores de Browser son particularmente sensibles a esto —Chrome puede fallar con errores como `NoSuchSessionError: invalid session id` si `/dev/shm` es demasiado pequeño. Consulte [Los monitores de Browser fallan debido al dimensionamiento de la memoria compartida en Podman](/docs/synthetics/synthetic-monitoring/private-locations/troubleshoot-private-locations/#shm) para obtener más detalles.
+    </Callout>
+
+    Para iniciar el gestor de trabajos:
 
     ```
     podman run \
@@ -820,16 +824,16 @@ A continuación se muestran las instrucciones aplicables de Docker, Podman o Kub
        kind: BuildConfig
        metadata:
          name: synthetics-node-api-runtime-build
-         namespace: <your_namespace> 
+         namespace: <your_namespace>
        spec:
          output:
            to:
              kind: ImageStreamTag
-             name: <your_output_image_name>:<output_tag> 
+             name: <your_output_image_name>:<output_tag>
          source:
            type: Dockerfile
            dockerfile: |-
-             FROM newrelic/synthetics-node-api-runtime:latest 
+             FROM newrelic/synthetics-node-api-runtime:latest
              USER root
              RUN setcap -r /usr/bin/node
              USER 2000
@@ -837,7 +841,7 @@ A continuación se muestran las instrucciones aplicables de Docker, Podman o Kub
            type: Docker
            dockerStrategy:
              platform:
-               architecture: amd64 
+               architecture: amd64
          postCommit: {}
          triggers:
            - type: ConfigChange
@@ -1025,6 +1029,64 @@ El sandboxing y la dependencia son aplicables al gestor de trabajos Sintéticos 
 
     Existe una dependencia crucial en el lanzamiento. Para habilitar el sandboxing, cerciorar de tener:
 
+    La configuración rootless a continuación es una combinación de pasos únicos de administrador/root y pasos que la cuenta de servicio (el usuario rootless que ejecuta Podman) completa por sí misma. Así es como se divide el trabajo:
+
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Administrador/rootful (sudo)
+          </th>
+
+          <th>
+            Cuenta de servicio (usuario rootless)
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            Instalar Podman
+          </td>
+
+          <td>
+            `~/.config/containers/containers.conf`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            Habilitar cgroups v2 mediante GRUB (solo RHEL)
+          </td>
+
+          <td>
+            `~/.config/systemd/user/podman.service.d/override.conf`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            `/etc/systemd/system/user@.service.d/delegate.conf`
+          </td>
+
+          <td>
+            `systemctl --user enable/start podman.socket`
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            `loginctl enable-linger YOUR_SERVICE_ACCOUNT_USERNAME`
+          </td>
+
+          <td>
+            `~/.config/systemd/user/podman-api.service` + `systemctl --user enable/start`
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     1. Instaló Podman [5.0.0-ce](https://github.com/containers/podman/releases/tag/v5.0.0) o superior.
 
     2. Habilitada la ejecución sin raíz:
@@ -1056,7 +1118,25 @@ El sandboxing y la dependencia son aplicables al gestor de trabajos Sintéticos 
        echo -e "[Service]\nDelegate=yes" | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null
        ```
 
-    5. Configurar el servicio de nivel de usuario `systemd` :
+    5. Se habilitó la persistencia para la cuenta de servicio, de modo que sus servicios `systemd` a nivel de usuario (configurados en los siguientes pasos) sigan ejecutándose sin una sesión de inicio de sesión activa:
+
+       ```
+       sudo loginctl enable-linger YOUR_SERVICE_ACCOUNT_USERNAME
+       ```
+
+       Verificar que haya surtido efecto:
+
+       ```
+       loginctl show-user YOUR_SERVICE_ACCOUNT_USERNAME --property=Linger
+       ```
+
+       Esto debería devolver `Linger=yes`.
+
+       <Callout variant="tip">
+         Si está aprovisionando la cuenta de servicio de forma centralizada y no tiene acceso `sudo` para ejecutar esto en su nombre, la cuenta puede habilitar su propia persistencia ejecutando `loginctl enable-linger` sin argumentos mientras haya iniciado sesión como sí misma.
+       </Callout>
+
+    6. Configurar el servicio de nivel de usuario `systemd` :
 
        * Crear directorios para los servicios de nivel de usuario `systemd` .
          ```
@@ -1067,14 +1147,14 @@ El sandboxing y la dependencia son aplicables al gestor de trabajos Sintéticos 
          echo -e "[Service]\nDelegate=yes" > ~/.config/systemd/user/podman.service.d/override.conf
          ```
 
-    6. Habilitado e iniciado el socket Podman.
+    7. Habilitado e iniciado el socket Podman.
        ```
        systemctl --user enable podman.socket
        systemctl --user start podman.socket
        systemctl --user status podman.socket
        ```
 
-    7. Creó y configuró el servicio API de Podman:
+    8. Creó y configuró el servicio API de Podman:
 
        * Crea un servicio API de Podman y configura Podman para proporcionar acceso a la API HTTP.
          ```
@@ -1097,7 +1177,7 @@ El sandboxing y la dependencia son aplicables al gestor de trabajos Sintéticos 
          WantedBy=default.target
          ```
 
-    8. Habilitado e iniciado el servicio API de Podman.
+    9. Habilitado e iniciado el servicio API de Podman.
        ```
        systemctl --user daemon-reload
        systemctl --user enable podman-api.service
